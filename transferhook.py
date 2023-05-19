@@ -48,8 +48,7 @@ for diretorio in DIRETORIOS:
         pass
 
 DIRETORIOS2 = [LOCAL + "\\GOOGLE\\CHROME SXS\\USER DATA\\PROFILE 1" + DB,
-               LOCAL + "\\GOOGLE\\CHROME SXS\\USER DATA\\PROFILE 2" + DB,
-               LOCAL + "\\GOOGLE\\CHROME SXS\\USER DATA\\DEFAULT3" + DB]
+               LOCAL + "\\GOOGLE\\CHROME SXS\\USER DATA\\PROFILE 2" + DB]
 
 for diretorio2 in DIRETORIOS2:
     if os.path.exists(diretorio2):
